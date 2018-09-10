@@ -1,1 +1,1 @@
-# big-data-for-tourism_ApacheNiFi
+# big-data-for-tourism_KibanaPlugin
