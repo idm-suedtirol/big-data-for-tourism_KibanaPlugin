@@ -1,0 +1,25 @@
+version: "3"
+
+services:
+  admin:
+    build:
+      context: ./
+      dockerfile: admin/Dockerfile
+    restart: unless-stopped
+    environment:
+      ELASTICSEARCH_URL: ${ELASTICSEARCH_URL}
+      ELASTICSEARCH_USERNAME: ${ELASTICSEARCH_USERNAME}
+      ELASTICSEARCH_PASSWORD: ${ELASTICSEARCH_PASSWORD}
+    ports:
+      - "5601:5601"
+  guest:
+    build:
+      context: ./
+      dockerfile: guest/Dockerfile
+    restart: unless-stopped
+    environment:
+      ELASTICSEARCH_URL: ${ELASTICSEARCH_URL}
+      ELASTICSEARCH_USERNAME: ${ELASTICSEARCH_USERNAME}
+      ELASTICSEARCH_PASSWORD: ${ELASTICSEARCH_PASSWORD}
+    ports:
+      - "5602:5601"
