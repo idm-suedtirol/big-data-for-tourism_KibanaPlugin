@@ -21,9 +21,10 @@ The Big Data For Toursim project exists of the following parts:
 
 - **Apache NiFi**:
     [Apache NiFi](https://nifi.apache.org/) is an application that automate the flow of data between systems. The application reads the files that were stored in a folder where the data are uploaded using SFTP and enrichs them deconding some information:
-- Geolocation 
-- Country-code decoding
-- Information related to the hotel classification.
+
+    - Geolocation 
+    - Country-code decoding
+    - Information related to the hotel classification.
 
     At the end inserts the extracted informations into elasticsearch and moves the file in a folder where are stored the processed files.
     The user that upload the file into the folder can also delete the information uploading a file whith the info to be deleted into a dedicated folder.
@@ -35,11 +36,12 @@ The Big Data For Toursim project exists of the following parts:
     Kibana shows the ingested data using dashboard with visualize widget like piecard, histogram, data table etc.
     The kibana istances store the config information in a separate index (to avoid conflicts with the kibana istance che is avaliable in ElasticCloud).
     In the project are defined 2 istances of kibana (one for guest users and the other for admin users).
-    The user used in the two istances are defined in elasticsearch with two different level of access to the data.    
-    Instance 1 - Admin Instance: 
+    The user used in the two istances are defined in elasticsearch with two different level of access to the data.
+
+    *Instance 1 - Admin Instance:*
     To access to this istance the user have to insert username and password; the user that have access to this istance are able to modify the existing dashboards and visualize and create new ones; they are also enabled to access to the data store in elasticsearch and run query to insert, update and delete the data index and create, modify and delete the indices in elasticsearch.
 
-    Instance 2 - Guest Instance: 
+    *Instance 2 - Guest Instance:*
     The Istance 2 is used to publish the data, the user can access to this istance and to the dashboard without writing any credential.
     The access is read only and only for the dashboards in a full-screen mode: when the user access to the istances sees the list of the dashboard avaliable; following the link access to the dashboard and can see the data. The guest user can access only to the dashboard; access to kibana in fullscreen mode and can't change manually the filter of the dashboards.
     
@@ -56,34 +58,21 @@ on your local machine for development and testing purposes.
 To build the project, the following prerequisites must be met:
 
 - [Docker](https://docker.com/)
-- 
-Configure the user in elasticloud, 
+- [Elastic Cloud](https://cloud.elastic.co/)
 
-login into elasticloud and create the users for the 2 kibana istances:
+### Setup
 
-Admin user
-Goto Management/Users/Create new user
-insert Username, password, fullname email address
-set role as superuser
+Setup a cluster in Elastic Cloud and configure the following two user: 
 
-Guest user
-Goto Management/Users/Create new user
-insert Username, password, fullname email address
-set role as guest, kibana_dashboard_only_user
+**Admin user:**
+- Goto Management/Users/Create new user
+- Insert username, password, fullname email address
+- Set role as superuser
 
-### Source code
-
-Get a copy of the repository:
-
-```bash
-git clone https://github.com/noi-techpark/big-data-for-tourism_KibanaPlugin.git
-```
-
-Change directory:
-
-```bash
-ToDo: cd big-data-for-tourism_KibanaPlugin/
-```
+**Guest user:**
+- Goto Management/Users/Create new user
+- Insert Username, password, fullname email address
+- Set role as guest, kibana_dashboard_only_user
 
 ### Configure
 
@@ -99,140 +88,65 @@ docker-compose up --build
 
 ## Deployment
 
-### Install Nifi (port 8080) 
-
-*Create user to run nifi*
-adduser seacom
-
-cd /usr/share/
-
-*Download  nifi tar.gz*
-wget http://archive.apache.org/dist/nifi/1.8.0/nifi-1.8.0-bin.tar.gz
-
-*Extract the file* 
-tar -xvf /home/seacom/installazione/nifi/nifi-1.8.0-bin.tar.gz
-
-*Copy the configuration to run_as*
-cp /home/seacom/installazione/nifi/bootstrap.conf /usr/share/nifi-1.7.1/conf/boostrap.conf
-
-*Create the folder to store the encrichment csv*
-*Copy the csv for the enrichment*
-
-*Change file and folder ownership*
-chown -R seacom:seacom nifi-1.8.0
-
-cd /usr/share/nifi-1.8.0/bin
-
-*Install nifi as service*
-./nifi.sh install
-
-*Enable service on boot*
-systemctl enable nifi
-
-*Start the service*
-systemctl start nifi
-
-Open the nifi interface at http://<ip>:8080/nifi
-
-Upload the template
-Create a new flow from the uploaded template
-
-Configure the nifi flow
-
-Right click the flow group "IDM", select variables, set the variable value
-- es_url (elasticsearch url) http://<ip_elastic>:9200/
-- es_user (elasticsearch user admin) 
-- es_password (elasticsearch user admin password)
-- enrich_path (the path where are stored the csv files for the enrichment)
-- folder_path (base path for the ingestion)  
-
-A detailed installation and deployment instruction ...
-
 ### Guest Instance (port 5601)
-*Download the kibana deb package and install it*
-wget https://artifacts.elastic.co/downloads/kibana/kibana-6.4.3-amd64.deb
-dpkg -i kibana-6.4.3-amd64.deb
 
-*Copy the configuration*
-cp /home/seacom/installazione/kibana/kibana.yml /etc/kibana/kibana.yml
+1. Install Kibana 6.4.3
 
-*Set elastic url, elastic user, elastic password in the file changing the fields (admin user):*
-elasticsearch.url: "<url_elastic>"
-elasticsearch.username: "<user>"
-elasticsearch.password: "<pwd>"
+2. Adjust the Kibana settings under `/etc/kibana/kibana.yml` by setting the following values to the Elastic Cloud URL and the admin user credentials:
 
-*Enable the service on boot*
-systemctl enable kibana
+    ```
+    elasticsearch.url: "<url_elastic>"
+    elasticsearch.username: "<user>"
+    elasticsearch.password: "<pwd>"
+    ```
 
-*Install the plugins*
-cd /usr/share/kibana/bin
+3. Install the following plugins from this repository:
 
-./kibana-plugin install file:///home/seacom/installazione/kibana/date_picker_vis-1.0.0.zip 
-./kibana-plugin install file:///home/seacom/installazione/kibana/dashboard_read_mode-1.0.0.zip 
-./kibana-plugin install file:///home/seacom/installazione/kibana/dashboard_fullscreen-1.0.0.zip
-./kibana-plugin install file:///home/seacom/installazione/kibana/dashboard_edit_filters-1.0.0.zip
-...
+    ```
+    /usr/share/kibana/bin/kibana-plugin install file:///../date_picker_vis-1.0.0.zip 
+    /usr/share/kibana/bin/kibana-plugin install file:///../dashboard_read_mode-1.0.0.zip 
+    /usr/share/kibana/bin/kibana-plugin install file:///../dashboard_fullscreen-1.0.0.zip
+    /usr/share/kibana/bin/kibana-plugin install file:///../dashboard_edit_filters-1.0.0.zip
+    ```
 
 ### Admin Instance (port 5611)
 
-cd opt
+1. Install Kibana 6.4.3
 
-*Download  kibana tar.gz*
-wget https://artifacts.elastic.co/downloads/kibana/kibana-6.4.3-linux-x86_64.tar.gz
+2. Adjust the Kibana settings under `/etc/kibana/kibana.yml` by setting the following values to the Elastic Cloud URL and the admin user credentials:
 
-*Extact the file*
-tar -xzf kibana-6.4.3-linux-x86_64.tar.gz
+    ```
+    elasticsearch.url: "<url_elastic>"
+    elasticsearch.username: "<user>"
+    elasticsearch.password: "<pwd>"
+    ```
 
-*Rename the kibana folder*
-mv kibana-6.4.3-linux-x86_64 kibana
+3. Install the following plugins from this repository:
 
-*Copy the istance configuration in the /etc folder (if you start the istance as service)*
-cp /home/seacom/installazione/kibana/kibana_admin.yml /etc/kibana/kibana_admin.yml
-Set elastic url, elastic user, elastic password in the file
-elasticsearch.url: "<url_elastic>"
-elasticsearch.username: "<user>"
-elasticsearch.password: "<pwd>"
+    ```
+    /usr/share/kibana/bin/kibana-plugin install file:///../date_picker_vis-1.0.0.zip 
+    ```
 
-*Copy the configuration in the config folder (if you what to start the istance from command line)*
-cp /home/seacom/installazione/kibana/kibana_admin.yml /opt/kibana/config/kibana.yml
-Set elastic url, elastic user, elastic password in the file
-elasticsearch.url: "<url_elastic>"
-elasticsearch.username: "<user>"
-elasticsearch.password: "<pwd>"
+### Nginx
 
-*Copy the service configuration file*
-cp /home/seacom/installazione/kibana/kibana_admin /etc/systemd/system/kibana_admin.service
+1. Install Nginx
 
-*Reload the service configuration*
-systemctl daemon-reload 
+2. Add the site configuration with the following content:
 
-*Enable the service on boot*
-systemctl enable kibana_admin
+    ```
+    server {
+        listen 80 default_server;
+        server_name  localhost;
 
-*Install the date picker plugin*
-cd /opt/kibana/bin/
-./kibana-plugin install file:///home/seacom/installazione/kibana/date_picker_vis-1.0.0.zip 
+        location / {
+            proxy_redirect off;
+            proxy_set_header Authorization "Basic <token>";
+            proxy_pass http://<url>;
+        }
+    }
+    ```
 
-*Start the service*
-systemctl start kibana_admin
-
-## Nginx
-*Install from ubuntu distro*
-apt install nginx
-
-*Copy the config*
-cp /home/seacom/installazione/nginx/default /etc/nginx/sites-available/default
-
-*Set the auth token*
-Calculate base64 for username:password of the guest user and write it in the file in the following row of the config file:
-
- proxy_set_header Authorization "Basic <auth_token>";
-
-*Enable service on boot*
-systemctl enable nginx
-
-*Start the service*
-systemctl start nginx
+    Note: Make sure to replace <url> with the URL pointing to the guest Kibana instance and <token> with a base64 encode string of the username and the password in the following format: <username>:<password>
 
 ## Information
 
